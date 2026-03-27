@@ -109,34 +109,47 @@ function renderStats() {
     statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
 }
 
-// Функция для создания изображения с прокси (ОСНОВНОЕ ИСПРАВЛЕНИЕ)
-function getItemImageUrl(itemId) {
-    const originalUrl = `https://catwar.net/cw3/things/${itemId}.png`;
-    // Используем бесплатный CORS прокси
-    return `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
+// ОСНОВНОЕ РЕШЕНИЕ: загружаем картинки через fetch с правильными заголовками
+async function loadImageWithReferer(itemId, imgElement) {
+    const imageUrl = `https://catwar.net/cw3/things/${itemId}.png`;
+    
+    try {
+        // Пробуем загрузить через fetch с referer
+        const response = await fetch(imageUrl, {
+            headers: {
+                'Referer': 'https://catwar.net/',
+                'Origin': 'https://catwar.net',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            imgElement.src = url;
+            imgElement.onload = () => URL.revokeObjectURL(url);
+        } else {
+            throw new Error('Image not found');
+        }
+    } catch (error) {
+        console.log(`ID ${itemId}: ${error.message}`);
+        imgElement.src = getPlaceholder(itemId);
+    }
 }
 
-function createItemImage(itemId, itemName) {
+// Функция для создания изображения
+function createItemImageElement(itemId, itemName) {
     const img = document.createElement('img');
-    img.src = getItemImageUrl(itemId);
     img.alt = itemName || `Предмет ${itemId}`;
     img.loading = 'lazy';
+    img.style.width = '50px';
+    img.style.height = '50px';
     
-    // Таймаут на случай долгой загрузки
-    const timeoutId = setTimeout(() => {
-        if (!img.complete) {
-            img.src = getPlaceholder(itemId);
-        }
-    }, 5000);
+    // Показываем плейсхолдер пока грузится
+    img.src = getPlaceholder(itemId);
     
-    img.onload = () => {
-        clearTimeout(timeoutId);
-    };
-    
-    img.onerror = () => {
-        clearTimeout(timeoutId);
-        img.src = getPlaceholder(itemId);
-    };
+    // Загружаем реальную картинку
+    loadImageWithReferer(itemId, img);
     
     return img;
 }
@@ -158,43 +171,52 @@ function renderItems() {
     
     itemsContainer.className = currentView === 'grid' ? 'items-grid' : 'items-list';
     
-    itemsContainer.innerHTML = pageItems.map(item => {
-        const imageUrl = getItemImageUrl(item.id);
+    // Очищаем контейнер
+    itemsContainer.innerHTML = '';
+    
+    // Добавляем каждый предмет с правильной загрузкой картинки
+    pageItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `item-card ${currentView === 'list' ? 'list-view' : ''}`;
         
-        return `
-            <div class="item-card ${currentView === 'list' ? 'list-view' : ''}">
-                <div class="item-image">
-                    <img 
-                        src="${imageUrl}"
-                        alt="${escapeHtml(item.name) || 'Предмет ' + item.id}"
-                        loading="lazy"
-                        onerror="this.src='${getPlaceholder(item.id)}'"
-                        onload="this.style.opacity='1'"
-                        style="opacity:0;transition:opacity 0.2s"
-                        onload="this.style.opacity='1'"
-                    >
-                </div>
-                <div class="item-info">
-                    <div class="item-name">${escapeHtml(item.name) || 'Без названия'}</div>
-                    <div class="item-id">ID: ${item.id}</div>
-                    ${item.tags?.length ? `
-                        <div class="item-tags">
-                            ${item.tags.map(tag => `<span class="tag-item">${escapeHtml(tag)}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'item-image';
+        
+        const img = createItemImageElement(item.id, item.name);
+        imageDiv.appendChild(img);
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'item-info';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'item-name';
+        nameDiv.textContent = item.name || 'Без названия';
+        
+        const idDiv = document.createElement('div');
+        idDiv.className = 'item-id';
+        idDiv.textContent = `ID: ${item.id}`;
+        
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(idDiv);
+        
+        if (item.tags?.length) {
+            const tagsDiv = document.createElement('div');
+            tagsDiv.className = 'item-tags';
+            item.tags.forEach(tag => {
+                const tagSpan = document.createElement('span');
+                tagSpan.className = 'tag-item';
+                tagSpan.textContent = tag;
+                tagsDiv.appendChild(tagSpan);
+            });
+            infoDiv.appendChild(tagsDiv);
+        }
+        
+        card.appendChild(imageDiv);
+        card.appendChild(infoDiv);
+        itemsContainer.appendChild(card);
+    });
     
     renderPagination();
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 function renderPagination() {
