@@ -120,20 +120,38 @@ function renderStats() {
 // Функция для создания изображения с обработкой ошибок
 function createItemImage(itemId, itemName) {
     const img = document.createElement('img');
-    const imageUrl = `https://catwar.net/cw3/things/${itemId}.png`;
+    // Используем прокси для обхода CORS
+    const originalUrl = `https://catwar.net/cw3/things/${itemId}.png`;
+    // Прокси-сервис (бесплатный)
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
     
-    img.src = imageUrl;
+    img.src = proxyUrl;
     img.alt = itemName || `Предмет ${itemId}`;
     img.loading = 'lazy';
+    img.crossOrigin = 'Anonymous';
     
-    // Если картинка не загрузилась - показываем плейсхолдер
-    img.onerror = function() {
-        this.onerror = null; // чтобы избежать зацикливания
-        // Создаем SVG плейсхолдер с ID предмета
-        this.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23888' font-size='12' font-family='monospace'%3E${itemId}%3C/text%3E%3C/svg%3E`;
+    // Таймаут на случай долгой загрузки
+    let timeout = setTimeout(() => {
+        if (!img.complete) {
+            img.src = getPlaceholder(itemId);
+        }
+    }, 5000);
+    
+    img.onload = () => {
+        clearTimeout(timeout);
+    };
+    
+    img.onerror = () => {
+        clearTimeout(timeout);
+        img.src = getPlaceholder(itemId);
     };
     
     return img;
+}
+
+// Функция для создания плейсхолдера с ID предмета
+function getPlaceholder(itemId) {
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23888' font-size='12' font-family='monospace'%3E${itemId}%3C/text%3E%3C/svg%3E`;
 }
 
 // Рендер предметов
