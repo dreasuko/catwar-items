@@ -115,7 +115,7 @@ function getImageUrl(itemId) {
     
     // Несколько вариантов прокси (если один не работает, попробуй другой)
     // Вариант 1: cors.sh (рекомендую)
-    return `https://cors.sh/${originalUrl}`;
+    return `https://cors-anywhere.herokuapp.com/${originalUrl}`;
     
     // Вариант 2: все прокси ниже закомментированы, можешь раскомментировать и попробовать
     // return `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
