@@ -150,12 +150,34 @@ h1 {
 .item-card.list-view .item-image {
     width: 60px;
     height: 60px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.item-image {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f3460;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .item-image img {
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
+    image-rendering: crisp-edges;
     image-rendering: pixelated;
+    display: block;
+}
+
+.item-image img[src*="data:image/svg+xml"] {
+    background: #2a2a2a;
 }
 
 .item-name {
