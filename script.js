@@ -3,7 +3,7 @@ const ITEMS_PER_PAGE = 48;
 let allItems = [];
 let filteredItems = [];
 let currentPage = 1;
-let currentView = 'grid'; // 'grid' или 'list'
+let currentView = 'grid';
 let activeTags = [];
 
 // DOM элементы
@@ -30,7 +30,7 @@ async function loadData() {
     }
 }
 
-// Рендер тегов для фильтрации
+// Рендер тегов
 function renderTagsFilter() {
     const allTags = new Set();
     allItems.forEach(item => {
@@ -48,11 +48,9 @@ function renderTagsFilter() {
         tagsContainer.appendChild(tagElement);
     });
     
-    // Активируем "Все" по умолчанию
     document.querySelector('[data-tag="all"]')?.classList.add('active');
 }
 
-// Переключение тега
 function toggleTag(tag) {
     const allBtn = document.querySelector('[data-tag="all"]');
     
@@ -71,7 +69,6 @@ function toggleTag(tag) {
             activeTags.push(tag);
         }
         
-        // Обновляем активные классы у тегов
         document.querySelectorAll('.tag').forEach(btn => {
             if (activeTags.includes(btn.dataset.tag)) {
                 btn.classList.add('active');
@@ -80,7 +77,6 @@ function toggleTag(tag) {
             }
         });
         
-        // Если активных тегов нет, активируем "Все"
         if (activeTags.length === 0) {
             allBtn.classList.add('active');
         }
@@ -89,16 +85,13 @@ function toggleTag(tag) {
     applyFilters();
 }
 
-// Применение всех фильтров
 function applyFilters() {
     const searchTerm = searchInput.value.toLowerCase();
     
     filteredItems = allItems.filter(item => {
-        // Фильтр по названию
         const matchesSearch = item.name?.toLowerCase().includes(searchTerm) || 
                               item.id.toString().includes(searchTerm);
         
-        // Фильтр по тегам
         let matchesTags = true;
         if (activeTags.length > 0) {
             matchesTags = activeTags.every(tag => item.tags?.includes(tag));
@@ -112,49 +105,46 @@ function applyFilters() {
     renderItems();
 }
 
-// Рендер статистики
 function renderStats() {
     statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
 }
 
-// Функция для создания изображения с обработкой ошибок
+// Функция для создания изображения с прокси (ОСНОВНОЕ ИСПРАВЛЕНИЕ)
+function getItemImageUrl(itemId) {
+    const originalUrl = `https://catwar.net/cw3/things/${itemId}.png`;
+    // Используем бесплатный CORS прокси
+    return `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
+}
+
 function createItemImage(itemId, itemName) {
     const img = document.createElement('img');
-    // Используем прокси для обхода CORS
-    const originalUrl = `https://catwar.net/cw3/things/${itemId}.png`;
-    // Прокси-сервис (бесплатный)
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
-    
-    img.src = proxyUrl;
+    img.src = getItemImageUrl(itemId);
     img.alt = itemName || `Предмет ${itemId}`;
     img.loading = 'lazy';
-    img.crossOrigin = 'Anonymous';
     
     // Таймаут на случай долгой загрузки
-    let timeout = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
         if (!img.complete) {
             img.src = getPlaceholder(itemId);
         }
     }, 5000);
     
     img.onload = () => {
-        clearTimeout(timeout);
+        clearTimeout(timeoutId);
     };
     
     img.onerror = () => {
-        clearTimeout(timeout);
+        clearTimeout(timeoutId);
         img.src = getPlaceholder(itemId);
     };
     
     return img;
 }
 
-// Функция для создания плейсхолдера с ID предмета
 function getPlaceholder(itemId) {
     return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23888' font-size='12' font-family='monospace'%3E${itemId}%3C/text%3E%3C/svg%3E`;
 }
 
-// Рендер предметов
 function renderItems() {
     if (!filteredItems.length) {
         itemsContainer.innerHTML = '<div class="loading">😿 Ничего не найдено</div>';
@@ -169,14 +159,20 @@ function renderItems() {
     itemsContainer.className = currentView === 'grid' ? 'items-grid' : 'items-list';
     
     itemsContainer.innerHTML = pageItems.map(item => {
-        // Создаем временный div для получения HTML изображения
-        const imgElement = createItemImage(item.id, item.name);
-        const imgHtml = imgElement.outerHTML;
+        const imageUrl = getItemImageUrl(item.id);
         
         return `
             <div class="item-card ${currentView === 'list' ? 'list-view' : ''}">
                 <div class="item-image">
-                    ${imgHtml}
+                    <img 
+                        src="${imageUrl}"
+                        alt="${escapeHtml(item.name) || 'Предмет ' + item.id}"
+                        loading="lazy"
+                        onerror="this.src='${getPlaceholder(item.id)}'"
+                        onload="this.style.opacity='1'"
+                        style="opacity:0;transition:opacity 0.2s"
+                        onload="this.style.opacity='1'"
+                    >
                 </div>
                 <div class="item-info">
                     <div class="item-name">${escapeHtml(item.name) || 'Без названия'}</div>
@@ -194,7 +190,6 @@ function renderItems() {
     renderPagination();
 }
 
-// Функция для экранирования HTML (безопасность)
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -202,7 +197,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Пагинация
 function renderPagination() {
     const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
     
@@ -238,7 +232,6 @@ function changePage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Переключение вида
 gridViewBtn.onclick = () => {
     currentView = 'grid';
     gridViewBtn.classList.add('active');
@@ -253,12 +246,10 @@ listViewBtn.onclick = () => {
     renderItems();
 };
 
-// Поиск с debounce
 let searchTimeout;
 searchInput.addEventListener('input', () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(applyFilters, 300);
 });
 
-// Запуск
 loadData();
