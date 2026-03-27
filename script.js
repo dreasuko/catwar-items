@@ -117,6 +117,25 @@ function renderStats() {
     statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
 }
 
+// Функция для создания изображения с обработкой ошибок
+function createItemImage(itemId, itemName) {
+    const img = document.createElement('img');
+    const imageUrl = `https://catwar.net/cw3/things/${itemId}.png`;
+    
+    img.src = imageUrl;
+    img.alt = itemName || `Предмет ${itemId}`;
+    img.loading = 'lazy';
+    
+    // Если картинка не загрузилась - показываем плейсхолдер
+    img.onerror = function() {
+        this.onerror = null; // чтобы избежать зацикливания
+        // Создаем SVG плейсхолдер с ID предмета
+        this.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23888' font-size='12' font-family='monospace'%3E${itemId}%3C/text%3E%3C/svg%3E`;
+    };
+    
+    return img;
+}
+
 // Рендер предметов
 function renderItems() {
     if (!filteredItems.length) {
@@ -131,29 +150,38 @@ function renderItems() {
     
     itemsContainer.className = currentView === 'grid' ? 'items-grid' : 'items-list';
     
-    itemsContainer.innerHTML = pageItems.map(item => `
-        <div class="item-card ${currentView === 'list' ? 'list-view' : ''}">
-            <div class="item-image">
-                <img 
-                    src="https://catwar.net/cw3/things/${item.id}.png" 
-                    alt="${item.name || 'Предмет ' + item.id}"
-                    loading="lazy"
-                    onerror="this.src='https://via.placeholder.com/50?text=?'"
-                >
+    itemsContainer.innerHTML = pageItems.map(item => {
+        // Создаем временный div для получения HTML изображения
+        const imgElement = createItemImage(item.id, item.name);
+        const imgHtml = imgElement.outerHTML;
+        
+        return `
+            <div class="item-card ${currentView === 'list' ? 'list-view' : ''}">
+                <div class="item-image">
+                    ${imgHtml}
+                </div>
+                <div class="item-info">
+                    <div class="item-name">${escapeHtml(item.name) || 'Без названия'}</div>
+                    <div class="item-id">ID: ${item.id}</div>
+                    ${item.tags?.length ? `
+                        <div class="item-tags">
+                            ${item.tags.map(tag => `<span class="tag-item">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
             </div>
-            <div class="item-info">
-                <div class="item-name">${item.name || 'Без названия'}</div>
-                <div class="item-id">ID: ${item.id}</div>
-                ${item.tags?.length ? `
-                    <div class="item-tags">
-                        ${item.tags.map(tag => `<span class="tag-item">${tag}</span>`).join('')}
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
     
     renderPagination();
+}
+
+// Функция для экранирования HTML (безопасность)
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Пагинация
@@ -166,7 +194,14 @@ function renderPagination() {
     }
     
     let pages = [];
-    for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+    let startPage = Math.max(1, currentPage - 4);
+    let endPage = Math.min(totalPages, startPage + 9);
+    
+    if (endPage - startPage < 9) {
+        startPage = Math.max(1, endPage - 9);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
     }
     
@@ -175,7 +210,6 @@ function renderPagination() {
         ${pages.map(page => `
             <button class="page-btn ${currentPage === page ? 'active' : ''}" onclick="changePage(${page})">${page}</button>
         `).join('')}
-        ${totalPages > 10 ? '<span>...</span>' : ''}
         <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">→</button>
     `;
 }
