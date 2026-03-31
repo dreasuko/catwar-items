@@ -132,18 +132,19 @@ function renderItems() {
     
     itemsContainer.innerHTML = pageItems.map(item => {
         const imageUrl = getImageUrl(item.id);
+        const fullImageUrl = `https://catwar.net/cw3/things/${item.id}.png`; // Оригинальная картинка
         
         return `
             <div class="item-card ${currentView === 'list' ? 'list-view' : ''}">
                 <div class="item-image">
-                    <img 
-                        src="${imageUrl}"
-                        alt="${escapeHtml(item.name) || 'Предмет ' + item.id}"
-                        loading="lazy"
-                        onerror="this.onerror=null; this.src='${getPlaceholder(item.id)}'"
-                        crossorigin="anonymous"
-                        referrerpolicy="no-referrer"
-                    >
+                    <a href="${fullImageUrl}" target="_blank" class="image-link" title="Открыть картинку в новой вкладке">
+                        <img 
+                            src="${imageUrl}"
+                            alt="${escapeHtml(item.name) || 'Предмет ' + item.id}"
+                            loading="lazy"
+                            onerror="this.onerror=null; this.src='${getPlaceholder(item.id)}'"
+                        >
+                    </a>
                 </div>
                 <div class="item-info">
                     <div class="item-name">${escapeHtml(item.name) || 'Без названия'}</div>
