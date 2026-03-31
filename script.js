@@ -106,7 +106,7 @@ function applyFilters() {
 }
 
 function renderStats() {
-    statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
+    statsElement.textContent = `всего: ${allItems.length}, показывается: ${filteredItems.length}`;
 }
 
 function getImageUrl(itemId) {
@@ -121,7 +121,7 @@ function getPlaceholder(itemId) {
 
 function renderItems() {
     if (!filteredItems.length) {
-        itemsContainer.innerHTML = '<div class="loading">😿 Ничего не найдено</div>';
+        itemsContainer.innerHTML = '<div class="loading">Ничего подходящего на полочках не нашлось :(</div>';
         paginationElement.innerHTML = '';
         return;
     }
