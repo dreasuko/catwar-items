@@ -6,9 +6,6 @@ let currentPage = 1;
 let currentView = 'grid';
 let activeTags = [];
 
-// Кэш для проверки существования картинок
-let imageExistsCache = new Map();
-
 // DOM элементы
 const itemsContainer = document.getElementById('itemsContainer');
 const searchInput = document.getElementById('searchInput');
@@ -23,13 +20,6 @@ async function loadData() {
     try {
         const response = await fetch('data/items.json');
         allItems = await response.json();
-        
-        // Проверяем существование картинок для всех предметов
-        await checkAllImages();
-        
-        // Добавляем тег "Нет предмета" для отсутствующих
-        updateMissingItemsTag();
-        
         filteredItems = [...allItems];
         renderTagsFilter();
         renderStats();
@@ -40,94 +30,6 @@ async function loadData() {
     }
 }
 
-// Проверка существования картинки на сервере CatWar
-async function checkImageExists(itemId) {
-    // Проверяем кэш
-    if (imageExistsCache.has(itemId)) {
-        return imageExistsCache.get(itemId);
-    }
-    
-    return new Promise((resolve) => {
-        const img = new Image();
-        const url = `https://catwar.net/cw3/things/${itemId}.png`;
-        
-        img.onload = () => {
-            imageExistsCache.set(itemId, true);
-            resolve(true);
-        };
-        
-        img.onerror = () => {
-            imageExistsCache.set(itemId, false);
-            resolve(false);
-        };
-        
-        img.src = url;
-        
-        // Таймаут на случай долгой загрузки
-        setTimeout(() => {
-            if (!imageExistsCache.has(itemId)) {
-                imageExistsCache.set(itemId, false);
-                resolve(false);
-            }
-        }, 3000);
-    });
-}
-
-// Проверка всех картинок
-async function checkAllImages() {
-    console.log("🔍 Проверка существования картинок...");
-    let checked = 0;
-    
-    // Проверяем только те предметы, у которых нет локальной картинки
-    for (const item of allItems) {
-        // Сначала проверяем, есть ли локальная картинка
-        const localImageUrl = getImageUrl(item.id);
-        const hasLocalImage = await checkLocalImage(localImageUrl);
-        
-        if (!hasLocalImage) {
-            // Если локальной нет, проверяем на сервере CatWar
-            const existsOnServer = await checkImageExists(item.id);
-            item.imageExists = existsOnServer;
-        } else {
-            item.imageExists = true;
-        }
-        
-        checked++;
-        if (checked % 100 === 0) {
-            console.log(`Проверено ${checked} предметов...`);
-        }
-    }
-    
-    console.log("✅ Проверка завершена!");
-}
-
-// Проверка наличия локальной картинки
-function checkLocalImage(url) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
-        img.src = url;
-        setTimeout(() => resolve(false), 1000);
-    });
-}
-
-// Добавление тега "Нет предмета" для отсутствующих картинок
-function updateMissingItemsTag() {
-    for (const item of allItems) {
-        // Если картинки нет ни локально, ни на сервере
-        if (!item.imageExists) {
-            if (!item.tags) {
-                item.tags = [];
-            }
-            // Добавляем тег, если его ещё нет
-            if (!item.tags.includes("Нет предмета")) {
-                item.tags.push("Нет предмета");
-            }
-        }
-    }
-}
-
 // Рендер тегов
 function renderTagsFilter() {
     const allTags = new Set();
@@ -135,16 +37,9 @@ function renderTagsFilter() {
         item.tags?.forEach(tag => allTags.add(tag));
     });
     
-    // Сортируем теги (ставим "Нет предмета" в конец)
-    const sortedTags = Array.from(allTags).sort((a, b) => {
-        if (a === "Нет предмета") return 1;
-        if (b === "Нет предмета") return -1;
-        return a.localeCompare(b);
-    });
-    
     tagsContainer.innerHTML = '<span class="tag" data-tag="all">Все</span>';
     
-    sortedTags.forEach(tag => {
+    allTags.forEach(tag => {
         const tagElement = document.createElement('span');
         tagElement.className = 'tag';
         tagElement.textContent = tag;
@@ -211,8 +106,7 @@ function applyFilters() {
 }
 
 function renderStats() {
-    const missingCount = allItems.filter(item => !item.imageExists).length;
-    statsElement.textContent = `📊 Всего: ${allItems.length} | Показано: ${filteredItems.length} | Отсутствует: ${missingCount}`;
+    statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
 }
 
 function getImageUrl(itemId) {
@@ -223,10 +117,6 @@ function getImageUrl(itemId) {
 
 function getPlaceholder(itemId) {
     return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23e6d9cb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23998877' font-size='12' font-family='monospace'%3E${itemId}%3C/text%3E%3C/svg%3E`;
-}
-
-function getRedCrossPlaceholder(itemId) {
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23ffebee'/%3E%3Cline x1='10' y1='10' x2='40' y2='40' stroke='%23e53935' stroke-width='4'/%3E%3Cline x1='40' y1='10' x2='10' y2='40' stroke='%23e53935' stroke-width='4'/%3E%3C/svg%3E`;
 }
 
 function renderItems() {
@@ -243,46 +133,27 @@ function renderItems() {
     itemsContainer.className = currentView === 'grid' ? 'items-grid' : 'items-list';
     
     itemsContainer.innerHTML = pageItems.map(item => {
-        let imageHtml;
+        const imageUrl = getImageUrl(item.id);
         const fullImageUrl = `https://catwar.net/cw3/things/${item.id}.png`;
         
-        if (item.imageExists) {
-            // Картинка существует — показываем её
-            const imageUrl = getImageUrl(item.id);
-            imageHtml = `
-                <a href="${fullImageUrl}" target="_blank" class="image-link" title="Открыть картинку в новой вкладке">
-                    <img 
-                        src="${imageUrl}"
-                        alt="${escapeHtml(item.name) || 'Предмет ' + item.id}"
-                        loading="lazy"
-                        onerror="this.onerror=null; this.src='${getPlaceholder(item.id)}'"
-                    >
-                </a>
-            `;
-        } else {
-            // Картинки нет — показываем красный крестик
-            imageHtml = `
-                <div class="image-link missing-image" title="Предмет отсутствует на сервере">
-                    <img 
-                        src="${getRedCrossPlaceholder(item.id)}"
-                        alt="Нет предмета"
-                        class="missing-img"
-                    >
-                </div>
-            `;
-        }
-        
         return `
-            <div class="item-card ${currentView === 'list' ? 'list-view' : ''} ${!item.imageExists ? 'missing-item' : ''}">
+            <div class="item-card ${currentView === 'list' ? 'list-view' : ''}">
                 <div class="item-image">
-                    ${imageHtml}
+                    <a href="${fullImageUrl}" target="_blank" class="image-link" title="Открыть картинку в новой вкладке">
+                        <img 
+                            src="${imageUrl}"
+                            alt="${escapeHtml(item.name) || 'Предмет ' + item.id}"
+                            loading="lazy"
+                            onerror="this.onerror=null; this.src='${getPlaceholder(item.id)}'"
+                        >
+                    </a>
                 </div>
                 <div class="item-info">
                     <div class="item-name">${escapeHtml(item.name) || 'Без названия'}</div>
                     <div class="item-id">ID: ${item.id}</div>
                     ${item.tags?.length ? `
                         <div class="item-tags">
-                            ${item.tags.map(tag => `<span class="tag-item ${tag === 'Нет предмета' ? 'tag-missing' : ''}">${escapeHtml(tag)}</span>`).join('')}
+                            ${item.tags.map(tag => `<span class="tag-item">${escapeHtml(tag)}</span>`).join('')}
                         </div>
                     ` : ''}
                 </div>
