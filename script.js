@@ -194,12 +194,49 @@ function renderPagination() {
     }
     
     paginationElement.innerHTML = `
-        <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">←</button>
-        ${pages.map(page => `
-            <button class="page-btn ${currentPage === page ? 'active' : ''}" onclick="changePage(${page})">${page}</button>
-        `).join('')}
-        <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">→</button>
+        <div class="pagination-controls">
+            <div class="pagination-buttons">
+                <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">←</button>
+                ${pages.map(page => `
+                    <button class="page-btn ${currentPage === page ? 'active' : ''}" onclick="changePage(${page})">${page}</button>
+                `).join('')}
+                <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">→</button>
+            </div>
+            <div class="pagination-jump">
+                <span>Страница</span>
+                <input type="number" id="pageInput" min="1" max="${totalPages}" value="${currentPage}" class="page-input">
+                <span>из ${totalPages}</span>
+                <button class="page-btn jump-btn" onclick="jumpToPage()">Перейти</button>
+            </div>
+        </div>
     `;
+    
+    // Добавляем обработчик нажатия Enter в поле ввода
+    const pageInput = document.getElementById('pageInput');
+    if (pageInput) {
+        pageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                jumpToPage();
+            }
+        });
+    }
+}
+
+// Функция для перехода на введённую страницу
+function jumpToPage() {
+    const pageInput = document.getElementById('pageInput');
+    const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+    let pageNum = parseInt(pageInput.value);
+    
+    // Проверяем, что введено число
+    if (isNaN(pageNum)) {
+        pageNum = 1;
+    }
+    
+    // Ограничиваем диапазон
+    pageNum = Math.max(1, Math.min(pageNum, totalPages));
+    
+    changePage(pageNum);
 }
 
 function changePage(page) {

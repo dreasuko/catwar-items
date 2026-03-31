@@ -300,6 +300,82 @@ h1 {
     position: relative;
 }
 
+/* Пагинация с прыжком на страницу */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pagination-jump {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fffaf5;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid #e0d3c4;
+}
+
+.page-input {
+    width: 70px;
+    padding: 6px 8px;
+    border: 1px solid #e0d3c4;
+    border-radius: 6px;
+    background: white;
+    color: #3e3a35;
+    text-align: center;
+    font-size: 14px;
+}
+
+.page-input:focus {
+    outline: none;
+    border-color: #b8956e;
+    box-shadow: 0 0 0 2px rgba(184, 149, 110, 0.2);
+}
+
+.jump-btn {
+    padding: 6px 12px;
+    background: #b8956e;
+    border-color: #b8956e;
+    color: white;
+}
+
+.jump-btn:hover {
+    background: #a07d5a;
+    border-color: #a07d5a;
+}
+
+.pagination-jump span {
+    color: #5e5346;
+    font-size: 14px;
+}
+
+/* Адаптация для телефонов */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+    }
+    
+    .pagination-jump {
+        justify-content: center;
+    }
+}
+
 @media (max-width: 768px) {
     .items-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
