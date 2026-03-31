@@ -109,18 +109,12 @@ function renderStats() {
     statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
 }
 
-// Функция получения URL картинки через разные прокси
+// Функция получения URL картинки из локальной папки
 function getImageUrl(itemId) {
-    const originalUrl = `https://catwar.net/cw3/things/${itemId}.png`;
-    
-    // Несколько вариантов прокси (если один не работает, попробуй другой)
-    // Вариант 1: cors.sh (рекомендую)
-    return `https://cors-anywhere.herokuapp.com/${originalUrl}`;
-    
-    // Вариант 2: все прокси ниже закомментированы, можешь раскомментировать и попробовать
-    // return `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
-    // return `https://cors-anywhere.herokuapp.com/${originalUrl}`;
-    // return `https://proxy.cors.sh/${originalUrl}`;
+    // Определяем папку по ID (0-999, 1000-1999, и т.д.)
+    const folderStart = Math.floor(itemId / 1000) * 1000;
+    const folderEnd = folderStart + 999;
+    return `images/${folderStart}-${folderEnd}/${itemId}.png`;
 }
 
 function renderItems() {
