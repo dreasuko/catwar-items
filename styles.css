@@ -6,8 +6,8 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #1a1a2e;
-    color: #eee;
+    background: #f5efe7;  /* Тёплый бежевый фон */
+    color: #3e3a35;       /* Мягкий тёмно-серый для текста */
     padding: 20px;
 }
 
@@ -22,37 +22,42 @@ header {
 }
 
 h1 {
-    color: #ffd966;
+    color: #8b6b4d;       /* Приглушённый коричневатый */
     margin-bottom: 10px;
+    font-weight: 500;
 }
 
 .stats {
-    color: #aaa;
+    color: #a18f7a;       /* Спокойный серо-бежевый */
     font-size: 14px;
 }
 
 /* Фильтры */
 .filters {
-    background: #16213e;
+    background: #fffaf5;  /* Почти белый с тёплым оттенком */
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e8dfd3;
 }
 
 #searchInput {
     width: 100%;
     padding: 12px;
     font-size: 16px;
-    border: 1px solid #0f3460;
+    border: 1px solid #e0d3c4;
     border-radius: 8px;
-    background: #0f3460;
-    color: #fff;
+    background: #ffffff;
+    color: #3e3a35;
     margin-bottom: 15px;
+    transition: 0.2s;
 }
 
 #searchInput:focus {
     outline: none;
-    border-color: #ffd966;
+    border-color: #b8956e;
+    box-shadow: 0 0 0 2px rgba(184, 149, 110, 0.2);
 }
 
 .tags-filter {
@@ -63,8 +68,8 @@ h1 {
 }
 
 .filter-label {
-    font-weight: bold;
-    color: #ffd966;
+    font-weight: 500;
+    color: #8b6b4d;
 }
 
 .tags-list {
@@ -74,21 +79,25 @@ h1 {
 }
 
 .tag {
-    background: #0f3460;
+    background: #f0e9df;
     padding: 5px 12px;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s;
     font-size: 14px;
+    color: #5e5346;
+    border: 1px solid #e0d3c4;
 }
 
 .tag:hover {
-    background: #e94560;
+    background: #e6d9cb;
+    color: #3e3a35;
 }
 
 .tag.active {
-    background: #e94560;
+    background: #b8956e;
     color: white;
+    border-color: #b8956e;
 }
 
 /* Переключение вида */
@@ -101,16 +110,18 @@ h1 {
 
 .view-controls button {
     padding: 8px 16px;
-    background: #16213e;
-    border: none;
+    background: #fffaf5;
+    border: 1px solid #e0d3c4;
     border-radius: 6px;
-    color: #fff;
+    color: #5e5346;
     cursor: pointer;
     transition: 0.2s;
 }
 
 .view-controls button.active {
-    background: #e94560;
+    background: #b8956e;
+    border-color: #b8956e;
+    color: white;
 }
 
 /* Сетка предметов */
@@ -128,16 +139,20 @@ h1 {
 }
 
 .item-card {
-    background: #16213e;
+    background: #fffaf5;
     border-radius: 12px;
     padding: 15px;
     text-align: center;
-    transition: transform 0.2s;
+    transition: all 0.2s;
+    border: 1px solid #e8dfd3;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .item-card:hover {
     transform: translateY(-3px);
-    background: #1e2a4a;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    border-color: #d6cbbc;
 }
 
 .item-card.list-view {
@@ -161,7 +176,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0f3460;
+    background: #f0e9df;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -177,18 +192,18 @@ h1 {
 }
 
 .item-image img[src*="data:image/svg+xml"] {
-    background: #2a2a2a;
+    background: #e6d9cb;
 }
 
 .item-name {
-    font-weight: bold;
+    font-weight: 500;
     margin: 10px 0 5px;
-    color: #ffd966;
+    color: #8b6b4d;
 }
 
 .item-id {
     font-size: 11px;
-    color: #888;
+    color: #a99883;
     margin-bottom: 8px;
 }
 
@@ -200,10 +215,11 @@ h1 {
 }
 
 .item-tags .tag-item {
-    background: #0f3460;
+    background: #f0e9df;
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 10px;
+    color: #5e5346;
 }
 
 .item-card.list-view .item-tags {
@@ -221,26 +237,35 @@ h1 {
 
 .page-btn {
     padding: 8px 14px;
-    background: #16213e;
-    border: none;
+    background: #fffaf5;
+    border: 1px solid #e0d3c4;
     border-radius: 6px;
-    color: #fff;
+    color: #5e5346;
     cursor: pointer;
+    transition: 0.2s;
 }
 
 .page-btn.active {
-    background: #e94560;
+    background: #b8956e;
+    border-color: #b8956e;
+    color: white;
 }
 
 .page-btn:hover:not(.active) {
-    background: #0f3460;
+    background: #f0e9df;
+    border-color: #d6cbbc;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .loading {
     text-align: center;
     padding: 50px;
     font-size: 18px;
-    color: #aaa;
+    color: #a99883;
 }
 
 @media (max-width: 768px) {
