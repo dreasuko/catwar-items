@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CatWar База предметов</title>
+    <title>CatWar Кладовка предметов</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📦 База предметов CatWar</h1>
+            <h1>Кладовка предметов CatWar</h1>
             <div class="stats" id="stats">Загрузка...</div>
         </header>
 
         <div class="filters">
-            <input type="text" id="searchInput" placeholder="🔍 Поиск по названию..." autocomplete="off">
+            <input type="text" id="searchInput" placeholder="🔍..." autocomplete="off">
             
             <div class="tags-filter">
-                <span class="filter-label">Метки:</span>
+                <span class="filter-label">Теги:</span>
                 <div id="tagsContainer" class="tags-list">
                     <!-- Теги будут подгружаться из JSON -->
                 </div>
@@ -25,13 +25,13 @@
         </div>
 
         <div class="view-controls">
-            <button id="gridViewBtn" class="active">📱 Сетка</button>
-            <button id="listViewBtn">📋 Список</button>
+            <button id="gridViewBtn" class="active">Сетка</button>
+            <button id="listViewBtn">Список</button>
         </div>
 
         <div id="itemsContainer" class="items-grid">
             <!-- Здесь будут предметы -->
-            <div class="loading">Загрузка предметов...</div>
+            <div class="loading">загрузка предметов...</div>
         </div>
 
         <div class="pagination" id="pagination"></div>

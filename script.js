@@ -106,7 +106,7 @@ function applyFilters() {
 }
 
 function renderStats() {
-    statsElement.textContent = `📊 Всего предметов: ${allItems.length} | Показано: ${filteredItems.length}`;
+    statsElement.textContent = `всего: ${allItems.length} | показано: ${filteredItems.length}`;
 }
 
 // Функция получения URL картинки из локальной папки
