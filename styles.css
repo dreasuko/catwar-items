@@ -376,6 +376,43 @@ h1 {
     }
 }
 
+/* Стили для отсутствующих предметов */
+.missing-item {
+    opacity: 0.85;
+    background: #fff5f0;
+    border-color: #ffcdd2;
+}
+
+.missing-img {
+    filter: grayscale(0.3);
+}
+
+.missing-image {
+    cursor: default !important;
+}
+
+.tag-missing {
+    background: #ffebee !important;
+    color: #c62828 !important;
+    border-color: #ffcdd2 !important;
+}
+
+/* Статистика */
+.stats {
+    color: #a18f7a;
+    font-size: 14px;
+}
+
+/* Анимация загрузки */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.item-image img {
+    animation: pulse 0.3s ease-in-out;
+}
+
 @media (max-width: 768px) {
     .items-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
